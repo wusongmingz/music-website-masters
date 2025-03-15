@@ -84,6 +84,9 @@ export default defineComponent({
         lyric: row.lyric,
         currentSongList: songList.value,
       });
+      const isPlay = computed(() => store.getters.isPlay);
+      store.commit("setIsPlay", !isPlay.value);
+
     }
 
     function handleEdit(row) {

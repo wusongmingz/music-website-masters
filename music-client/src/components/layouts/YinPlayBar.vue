@@ -13,7 +13,7 @@
       </div>
         <!--播放开始结束时间-->
         <div v-if="songId">
-          <div class="song-info">{{ this.songTitle }} - {{ this.singerName }}</div>
+          <div class="song-info">{{ songTitle }} - {{ singerName }}</div>
           <div class="time-info">{{ startTime }} / {{ endTime }}</div>
         </div>
       </div>
@@ -218,13 +218,16 @@ export default defineComponent({
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
+        this.togglePlay()
       } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
         if (this.currentPlayIndex > 0) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex - 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
+          this.togglePlay()
         } else {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayList.length - 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
+          this.togglePlay()
         }
       }
     },
@@ -235,19 +238,23 @@ export default defineComponent({
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
+        this.togglePlay()
       } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
         if (this.currentPlayIndex < this.currentPlayList.length - 1) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex + 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
+          this.togglePlay()
         } else {
           this.$store.commit("setCurrentPlayIndex", 0);
           this.toPlay(this.currentPlayList[0].url);
+          this.togglePlay()
         }
       }
     },
     // 选中播放
     toPlay(url) {
       if (url && url !== this.songUrl) {
+        console.log('Playing song with URL:', url);
         const song = this.currentPlayList[this.currentPlayIndex];
         this.playMusic({
           id: song.id,
