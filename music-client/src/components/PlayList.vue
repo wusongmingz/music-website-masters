@@ -81,10 +81,20 @@ export default defineComponent({
     padding-bottom: 100%;
     overflow: hidden;
     border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease-in-out;
 
     .card-img {
+      top: 0;
+      left: 0;
       width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      object-fit: contain;
+      object-position: center;
       transition: all 0.4s ease;
+      position: absolute;
     }
   }
 

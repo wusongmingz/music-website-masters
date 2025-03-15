@@ -21,7 +21,6 @@ import {  NavName } from "@/enums";
 import { HttpManager } from "@/api";
 import mixin from "@/mixins/mixin";
 import Dia from '@/components/Dia.vue'
-import Header from "./Header.vue";
 
 const songList = ref([]); // 歌单列表
 const singerList = ref([]); // 歌手列表

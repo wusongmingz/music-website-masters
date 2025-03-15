@@ -1,10 +1,15 @@
 <template>
   <div class="yin-header">
     <!--图标-->
-    <div class="header-logo" @click="goPage()">
-      <yin-icon :icon="iconList.ERJI"></yin-icon>
-      <span>{{ musicName }}</span>
+
+    <div class="header-logo" >
+      <div style="display: flex; align-items: center;">
+        <img style="height: 50px; width: 50px;" src="../../assets/images/headerIcon.png">
+        <!-- <yin-icon :icon="iconList.ERJI"></yin-icon> -->
+        <span>{{ musicName }}</span>
+      </div>
     </div>
+
     <yin-header-nav class="yin-header-nav" :styleList="headerNavList" :activeName="activeNavName" @click="goPage"></yin-header-nav>
     <!--搜索框-->
     <div class="header-search">
@@ -35,7 +40,6 @@ import { HttpManager } from "@/api";
 
 export default defineComponent({
   components: {
-    YinIcon,
     YinHeaderNav,
   },
   setup() {
@@ -112,6 +116,7 @@ export default defineComponent({
 
 @media screen and (min-width: $sm) {
   .header-logo {
+    display: flex;
     margin: 0 1rem;
   }
 }
@@ -142,6 +147,29 @@ export default defineComponent({
   display: flex;
   white-space: nowrap;
   flex-wrap: nowrap;
+  /* 确保伪元素定位在 .yin-header 内部 */
+  position: relative; 
+  /* 确保内容显示在伪元素之上 */
+  z-index: 1; 
+}
+
+/* 添加伪元素 */
+.yin-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 设置背景图片 */
+  background-image: url('../../../public/背部导航栏.jpg');
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: cover;
+  /* 添加透明度 */
+  opacity: 0.5; 
+  /* 确保伪元素在内容下方 */
+  z-index: -1; 
 }
 
 /* LOGO */

@@ -5,7 +5,108 @@
         <div id="Aurora-Dia--tips-wrapper">
           <div id="Aurora-Dia--tips" class="Aurora-Dia--tips">早上好呀～</div>
         </div>
-        <div id="Aurora-Dia" class="Aurora-Dia">
+        <transition name="chatani">
+          <el-dialog center class="aichat-outbox" v-model="isShowChatBox">
+            <template #header>
+              <div
+                style="text-align: end;display: flex;justify-content: space-between; padding-right: 5px; align-content: center"
+              >
+                <span
+                  style="
+                    align-items: center;
+                    align-content: center;
+                    padding-left: 10px;
+                  "
+                  >AI对话</span
+                >
+              </div>
+            </template>
+            <div class="aichat-body" ref="chatbodyref">
+              <div class="message-panel" id="message-panel" ref="messageRef">
+                <div class="message-list">
+                  <div
+                    :class="['message-item', item.type == 1 ? 'ai-item' : '']"
+                    v-for="(item, index) in messageList"
+                    :key="item"
+                    :id="'item' + index"
+                  >
+                    <template v-if="item.type == 0">
+                      <div class="message-content" style="margin-left: 50px">
+                        <div class="content-inner">{{ item.content }}</div>
+                      </div>
+                      <div class="user-icon">我</div>
+                    </template>
+                    <template v-else>
+                      <div class="user-icon">AI</div>
+                      <div
+                        class="message-content ai-item"
+                        style="margin-right: 50px"
+                      >
+                      <div class="conten-inner"></div>
+                        <MdPreview
+                          previewTheme="vuepress"
+                          :codeFoldable="false"
+                          editorId="preview"
+                          class="preview"
+                          :modelValue="item.content.join('')"
+                        />
+                        <div class="loading" v-if="item.loading">
+                          <img src="../assets/images/发送.png" />
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+              <div class="send-panel">
+                <el-form
+                  :model="formData"
+                  ref="formDataRef"
+                  @submit.prevent
+                  class="input-and-btn"
+                >
+                  <!--input输入-->
+                  <el-form-item label="" class="input" prop="content">
+                    <el-input
+                      clearable
+                      type="textarea"
+                      placeholder="请输入你想问的问题"
+                      v-model="formData.content"
+                      resize="none"
+                      :autosize="{ minRows: 1, maxRows: 3 }"
+                      @keydown.enter="keySend"
+                    ></el-input>
+                  </el-form-item>
+                  <!--input输入-->
+                  <el-form-item label="" prop="" class="send-btn">
+                    <el-button
+                      type="primary"
+                      @click="sendMessage"
+                      style="
+                        padding: 12px;
+                        padding-left: 11px;
+                        padding-right: 13px;
+                        width: 36px;
+                        height: 36px;
+                      "
+                      :style="[
+                        formData.content
+                          ? 'background:#0066ff'
+                          : 'background:#dcdcdc',
+                      ]"
+                      :disabled="loading"
+                      >                      <img
+                        src="../assets/images/发送.png"
+                        alt="发送"
+                        style="width: 1.5rem; height: 1.5rem;"
+                      /></el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </div>
+          </el-dialog>
+        </transition>
+        <div id="Aurora-Dia" class="Aurora-Dia" @click="setIsShowChatBox(true)">
           <div id="Aurora-Dia--eyes" class="Aurora-Dia--eyes">
             <div id="Aurora-Dia--left-eye" class="Aurora-Dia--eye left"></div>
             <div id="Aurora-Dia--right-eye" class="Aurora-Dia--eye right"></div>
@@ -17,55 +118,142 @@
   </transition>
 </template>
 
-<script lang="ts">
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import { computed, defineComponent, onMounted, ref } from "vue";
-import { useDiaStore } from "@/store/dia";
-import { useAppStore } from "@/store/app";
+<script setup lang="ts">
+// import "@/assets/iconfont2/iconfont.css";
+import { computed } from "vue";
+import { useDiaStore } from "../store/dia";
+import { useAppStore } from "../store/app";
+import { HttpManager } from "@/api";
+// 使用组合式 API 代替 defineComponent
+const diaStore = useDiaStore();
+const appStore = useAppStore();
+const showDia = ref(true);
 
-export default defineComponent({
-  name: "Dia",
-  setup() {
-    const diaStore = useDiaStore();
-    const appStore = useAppStore();
-    const showDia = ref(true);
-    onMounted(() => {
-      initializeBot();
-    });
-    const initializeBot = () => {
-      if (!appStore.aurora_bot_enable) return;
-      diaStore.initializeBot({
-        locale: diaStore.aurora_bot.locale,
-        tips: diaStore.aurora_bot.tips,
-      });
-      setTimeout(() => {
-        showDia.value = true;
-      }, 1000);
-    };
-    return {
-      cssVariables: computed(() => {
-        return `
-          --aurora-dia--linear-gradient: ${appStore.themeConfig.header_gradient_css};
-          --aurora-dia--linear-gradient-hover: linear-gradient(
-            to bottom,
-            ${appStore.themeConfig.gradient.color_2},
-            ${appStore.themeConfig.gradient.color_3}
-          );
-          --aurora-dia--platform-light: ${appStore.themeConfig.gradient.color_3};
-        `;
-      }),
-      showDia,
-    };
-  },
+// 在组件挂载时初始化 Bot
+onMounted(() => {
+  initializeBot();
 });
+
+// 初始化 Bot 的函数
+const initializeBot = () => {
+  if (!appStore.aurora_bot_enable) return;
+  diaStore.initializeBot({
+    locale: diaStore.aurora_bot.locale,
+    tips: diaStore.aurora_bot.tips,
+  });
+  setTimeout(() => {
+    showDia.value = true;
+  }, 1000);
+};
+
+// 计算 css 变量
+const cssVariables = computed(() => {
+  return `
+    --aurora-dia--linear-gradient: ${appStore.themeConfig.header_gradient_css};
+    --aurora-dia--linear-gradient-hover: linear-gradient(
+      to bottom,
+      ${appStore.themeConfig.gradient.color_2},
+      ${appStore.themeConfig.gradient.color_3}
+    );
+    --aurora-dia--platform-light: ${appStore.themeConfig.gradient.color_3};
+  `;
+});
+const isShowChatBox = ref(false);
+
+const setIsShowChatBox = (v: boolean) => {
+  isShowChatBox.value = v;
+};
+import { ElMessage } from "element-plus";
+
+import {
+  ref,
+  reactive,
+  getCurrentInstance,
+  nextTick,
+  onMounted,
+  onUnmounted,
+} from "vue";
+const { proxy } = getCurrentInstance();
+import { MdPreview, MdCatalog } from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
+
+const formData = ref({ content: '' });
+
+const messageList = ref([]);
+const loading = ref(false);
+
+const keySend = (event) => {
+  if (!event.ctrlKey) {
+    event.preventDefault();
+    if (loading.value) {
+      ElMessage.warning("请等待本次回答结束~");
+      return;
+    }
+    nextTick(() => {
+      const content = document.getElementById("message-panel");
+      content.scrollTop = content.scrollHeight;
+    });
+
+    sendMessage();
+  } else {
+    formData.value.content += "\n";
+  }
+};
+
+const sendMessage = async () => {
+
+  
+  const message = formData.value.content;
+  console.log(message,11111);
+  formData.value.content = "";
+
+  if (!message) {
+    ElMessage({
+      type: "warning",
+      message: "请输入内容",
+      duration: 2000,
+    });
+    return;
+  }
+
+  messageList.value.push({
+    type: 0,
+    content: message,
+  });
+
+  loading.value = true;
+
+  try {
+    const res = await HttpManager.getChatGpt(message);
+    console.log(res);
+    
+    messageList.value.push({
+      type: 1,
+      content: [res],
+      loading: false,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    messageList.value.push({
+      type: 1,
+      content: ["抱歉，回答失败，请稍后再试。"],
+      loading: false,
+    });
+  } finally {
+    loading.value = false;
+    nextTick(() => {
+      const content = document.getElementById("message-panel");
+      content.scrollTop = content.scrollHeight;
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped>
 #bot-container {
   position: fixed;
   left: 20px;
-  bottom: 120px;
+  bottom: 100px;
   z-index: 1000;
   width: 70px;
   height: 60px;
@@ -202,6 +390,20 @@ export default defineComponent({
   animation: tips-breathe 3s linear infinite;
   transition: 0.3s linear opacity;
 }
+// #Aurora-Dia--tips-wrapper {
+//   position: absolute;
+//   bottom: 80px;
+//   right: -800px;
+//   width: 800px;
+//   height: 600px;
+//   background: var(--aurora-dia--linear-gradient);
+//   color: var(--text-normal);
+//   padding: 0.2rem;
+//   border-radius: 8px;
+//   opacity: 0;
+//   animation: tips-breathe 3s linear infinite;
+//   transition: 0.3s linear opacity;
+// }
 
 #Aurora-Dia--tips-wrapper.active {
   opacity: 0.86;
@@ -216,7 +418,8 @@ export default defineComponent({
   padding: 0.2rem 0.5rem;
   font-size: 0.8rem;
   font-weight: 800;
-  background: var(--background-secondary);
+  // background: var(--background-secondary);
+  background: #fff;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -399,5 +602,186 @@ export default defineComponent({
   color: #7aa2f7;
   background-color: #7aa2f7;
   background-image: var(--strong-gradient);
+}
+
+.aichat-outbox {
+  width: 70vw;
+  height: 760px;
+  position: absolute;
+  left: 15vw;
+  top: -100px;
+  padding-bottom: 5px;
+  background: #eff1f7;
+  // background: linear-gradient(130deg, #24c7dc, #5433ff 41.07%, #ff0099 76.05%);
+  border-radius: 10px;
+  box-shadow: 0px 0px 3.5px rgb(0, 0, 0, 0.2);
+  display: flex;
+  .el-dialog__body {
+    height: 100%;
+    padding-bottom: 5px;
+  }
+  flex-direction: column;
+  .aichat-body {
+    width: 100%;
+    height: 100%;
+    // background: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: 0px 10px;
+    position: relative;
+    overscroll-behavior: contain;
+  }
+}
+.chatani-enter-active,
+.chatani-leave-active {
+  transition: all 0.5s ease;
+}
+
+.chatani-enter-from,
+.chatani-leave-to {
+  opacity: 0;
+
+  transform: translateX(-400px);
+}
+.message-panel {
+  position: relative;
+  overflow: auto;
+  height: 600px;
+
+  padding-bottom: 10px;
+  .message-list {
+    margin: 0px auto;
+    width: 100%;
+    .message-item {
+      margin: 10px 0px;
+      width: 100%;
+      display: flex;
+      .user-icon {
+        min-width: 40px;
+        max-width: 40px;
+        height: 40px;
+        line-height: 40px;
+        border-radius: 20px;
+        background: #535353;
+        color: #fff;
+        text-align: center;
+        margin-left: 10px;
+      }
+      .message-content {
+        width: calc(100% - 100px);
+        margin-left: 10px;
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 40px;
+      }
+      .content-inner {
+        background: #6d95f9;
+        border-radius: 5px;
+        padding: 10px;
+        color: #fff;
+        white-space: wrap;
+      }
+    }
+    .ai-item {
+      line-height: 23px;
+      .message-content {
+        display: block;
+        background: #fff;
+        margin-top: 40px;
+        border-radius: 5px;
+      }
+      .user-icon {
+        background: #64018f;
+        margin-left: 0px;
+      }
+      :deep(.md-editor-previewOnly) {
+        border-radius: 5px;
+        background: #fff;
+      }
+      :deep(.md-editor-preview-wrapper) {
+        padding: 10px;
+      }
+      .loading {
+        text-align: center;
+      }
+    }
+  }
+}
+.send-panel {
+  width: 100%;
+  // max-height: 90px;
+  background: #fff;
+  box-shadow: 0px 0px 3px rgb(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+  .el-form-item {
+    margin-bottom: 0px;
+    // height: 100%;
+    .el-form-item__content {
+      // height: 100%;
+    }
+  }
+
+  .input-and-btn {
+    display: flex;
+    height: 100%;
+    align-items: end;
+  }
+  .input {
+    flex: 1;
+    // height: 100%;
+    user-select: none;
+    .el-textarea {
+      // height: 100%;
+      min-height: 36px;
+
+      .el-textarea__inner {
+        // height: 100%;
+        // max-height: 80px;
+        box-shadow: none !important;
+        min-height: 36px !important;
+        align-content: center;
+      }
+      .el-textarea__inner:hover {
+        box-shadow: none;
+      }
+      .el-textarea__inner:focus {
+        box-shadow: none;
+      }
+    }
+  }
+  .send-btn {
+    // text-align: right;
+    // margin-bottom: 0px;
+    // align-content: end;
+    // // padding: 5px;
+    // :deep(.el-form-item__content) {
+    //   justify-content: flex-end;
+    // }
+    .el-button {
+      background: #fff;
+      border: none;
+    }
+  }
+  :deep(.el-textarea__inner) {
+    border: 0 !important;
+    resize: none !important;
+    box-shadow: none;
+  }
+}
+.no-data {
+  text-align: center;
+  color: #5f5f5f;
+}
+.preview {
+background: '#202020';
+border-radius: 10px;
+  p {
+    margin: 5px;
+  }
 }
 </style>
