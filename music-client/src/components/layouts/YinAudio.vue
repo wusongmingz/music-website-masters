@@ -1,5 +1,5 @@
 <template>
-  <audio :src="attachImageUrl(songUrl)" controls="controls" :ref="player" preload="true" @canplay="canplay" @timeupdate="timeupdate" @ended="ended">
+  <audio :src="attachImageUrl(songUrl)" controls :ref="player" preload="true"  @timeupdate="timeupdate" @ended="ended">
     <!--（1）属性：controls，preload（2）事件：canplay，timeupdate，ended（3）方法：play()，pause() -->
     <!--controls：向用户显示音频控件（播放/暂停/进度条/音量）-->
     <!--preload：属性规定是否在页面加载后载入音频-->
@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, getCurrentInstance, computed, watch } from "vue";
+import { defineComponent, ref, getCurrentInstance, computed, watch, nextTick } from "vue";
 import { useStore } from "vuex";
 import { HttpManager } from "@/api";
 import { onMounted } from 'vue';
@@ -43,11 +43,13 @@ export default defineComponent({
 
 
     const songUrl = computed(() => store.getters.songUrl); // 音乐链接
+    console.log(songUrl.value)
     const isPlay = computed(() => store.getters.isPlay); // 播放状态
     const volume = computed(() => store.getters.volume); // 音量
     const changeTime = computed(() => store.getters.changeTime); // 指定播放时刻
     const autoNext = computed(() => store.getters.autoNext); // 用于触发自动播放下一首
     // 监听播放还是暂停
+
     watch(isPlay, () => togglePlay());
     // 跳到指定时刻播放
     watch(changeTime, () => (divRef.value.currentTime = changeTime.value));
@@ -55,18 +57,22 @@ export default defineComponent({
 
     // 开始 / 暂停
     function togglePlay() {
-      isPlay.value ? divRef.value.play() : divRef.value.pause();
+      nextTick(()=>{
+        isPlay.value ? divRef.value.play() : divRef.value.pause();
+      })
     }
     // 获取歌曲链接后准备播放
     function canplay() {
       //  记录音乐时长
       proxy.$store.commit("setDuration", divRef.value.duration);
-      //  开始播放
+      //  开始播放3
       if (muted.value) {
         divRef.value.muted = false;
         muted.value = false;
       }
       // divRef.value.play();
+      console.log(2134)
+
       proxy.$store.commit("setIsPlay", true);
     }
     // 音乐播放时记录音乐的播放位置

@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, getCurrentInstance, onMounted, ref, watch} from "vue";
+import {computed, defineComponent, getCurrentInstance, nextTick, onMounted, ref, watch} from "vue";
 import {mapGetters, useStore} from "vuex";
 import mixin from "@/mixins/mixin";
 import YinIcon from "./YinIcon.vue";
@@ -79,6 +79,9 @@ export default defineComponent({
   setup() {
     const {proxy} = getCurrentInstance();
     const store = useStore();
+    watch(()=>store.getters.playBtnIcon,(n,o)=>{
+      console.log('n',n)
+    })
     const {routerManager, playMusic, checkStatus, downloadMusic} = mixin();
 
     const isCollection = ref(false); // 是否收藏
@@ -196,6 +199,11 @@ export default defineComponent({
       this.next();
     },
   },
+  mounted() {
+    if(this.isPlay){
+      this.togglePlay()
+    }
+  },
   methods: {
     changeAside() {
       this.$store.commit("setShowAside", !this.showAside);
@@ -219,15 +227,30 @@ export default defineComponent({
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
         this.togglePlay()
+        if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
       } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
         if (this.currentPlayIndex > 0) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex - 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
           this.togglePlay()
+          if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
         } else {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayList.length - 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
           this.togglePlay()
+          if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
         }
       }
     },
@@ -239,15 +262,30 @@ export default defineComponent({
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
         this.togglePlay()
+        if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
       } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
         if (this.currentPlayIndex < this.currentPlayList.length - 1) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex + 1);
           this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
           this.togglePlay()
+          if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
         } else {
           this.$store.commit("setCurrentPlayIndex", 0);
           this.toPlay(this.currentPlayList[0].url);
           this.togglePlay()
+          if(!this.isPlay){
+          nextTick(()=>{
+            this.togglePlay() 
+          })
+        }
         }
       }
     },

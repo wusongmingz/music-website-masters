@@ -16,7 +16,7 @@
             name: item.name,
             lyric: item.lyric,
             currentSongList: currentPlayList,
-          })">
+          }),togglePlay()">
           {{ getSongTitle(item.name) }}
         </li>
       </ul>
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, computed, onMounted } from "vue";
+import { defineComponent, getCurrentInstance, computed, onMounted, nextTick } from "vue";
 import { useStore } from "vuex";
 import mixin from "@/mixins/mixin";
 
@@ -38,7 +38,14 @@ export default defineComponent({
     const songId = computed(() => store.getters.songId); // 音乐 ID
     const currentPlayList = computed(() => store.getters.currentPlayList); // 当前播放
     const showAside = computed(() => store.getters.showAside); // 是否显示侧边栏
-
+    const togglePlay=()=>{
+      proxy.$store.commit('setIsPlay',!store.getters.isPlay);
+      if(!store.getters.isPlay){
+        nextTick(()=>{
+           proxy.$store.commit('setIsPlay',!store.getters.isPlay);
+        })
+      }
+    }
     onMounted(() => {
       document.addEventListener('click', () => {
         proxy.$store.commit('setShowAside', false)
@@ -50,12 +57,11 @@ export default defineComponent({
       currentPlayList,
       showAside,
       getSongTitle,
-      playMusic,
-    };
-  },
+      playMusic,togglePlay
+    }
+  }
 });
 </script>
-
 <style lang="scss" scoped>
 @import "@/assets/css/yin-current-play.scss";
 </style>

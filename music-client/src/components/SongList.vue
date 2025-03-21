@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, getCurrentInstance, toRefs, computed, reactive } from "vue";
+import { defineComponent, getCurrentInstance, toRefs, computed, reactive, nextTick } from "vue";
 import { useStore } from "vuex";
 import { MoreFilled, Delete, Download } from "@element-plus/icons-vue";
 
@@ -86,7 +86,11 @@ export default defineComponent({
       });
       const isPlay = computed(() => store.getters.isPlay);
       store.commit("setIsPlay", !isPlay.value);
-
+      if(!isPlay.value){
+        nextTick(()=>{
+          store.commit("setIsPlay",true);
+        })
+      }
     }
 
     function handleEdit(row) {

@@ -49,6 +49,7 @@ export default {
       state.songId = songId;
     },
     setSongTitle: (state, songTitle) => {
+      console.log("songTitle", songTitle);
       state.songTitle = songTitle;
     },
     setSongUrl: (state, songUrl) => {
@@ -71,6 +72,7 @@ export default {
       state.isPlay = isPlay;
     },
     setPlayBtnIcon: (state, playBtnIcon) => {
+      console.log("playBtnIcon", playBtnIcon);
       state.playBtnIcon = playBtnIcon;
     },
     setVolume: (state, volume) => {
@@ -98,6 +100,7 @@ export default {
   },
   actions: {
     playMusic: ({ commit }, { id, url, pic, index, songTitle, singerName, lyric, currentSongList }) => {
+      console.log("播放音乐");
       commit("setSongId", id);
       commit("setSongUrl", url);
       commit("setSongPic", pic);

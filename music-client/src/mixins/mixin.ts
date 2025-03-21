@@ -48,6 +48,7 @@ export default function () {
 
   // 播放
   function playMusic({ id, url, pic, index, name, lyric, currentSongList }) {
+    console.log("播放");
     const songTitle = getSongTitle(name);
     const singerName = getSingerName(name);
     proxy.$store.dispatch("playMusic", {
